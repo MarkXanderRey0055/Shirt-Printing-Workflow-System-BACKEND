@@ -3,7 +3,7 @@ import pool from './db.js';
 export const getAllOrders = async () => {
     try {
         const [rows] = await pool.query(`
-            SELECT * FROM operations 
+            SELECT * FROM reports
             ORDER BY date DESC, created_at DESC
         `);
         return rows;
@@ -18,7 +18,7 @@ export const createOrder = async (orderData) => {
         const { customer, design, items, amount, status = 'pending' } = orderData;
         
         const [result] = await pool.query(`
-            INSERT INTO operations (customer, design, items, amount, status, date)
+            INSERT INTO reports (customer, design, items, amount, status, date)
             VALUES (?, ?, ?, ?, ?, CURDATE())
         `, [customer, design, parseInt(items), parseFloat(amount), status]);
         
@@ -32,7 +32,7 @@ export const createOrder = async (orderData) => {
 export const updateOrderStatus = async (id, status) => {
     try {
         const [result] = await pool.query(
-            'UPDATE operations SET status = ? WHERE orderID = ?',
+            'UPDATE reports SET status = ? WHERE orderID = ?',
             [status, id]
         );
         return result.affectedRows > 0;
@@ -44,7 +44,7 @@ export const updateOrderStatus = async (id, status) => {
 
 export const deleteOrder = async (id) => {
     try {
-        const [result] = await pool.query('DELETE FROM operations WHERE orderID = ?', [id]);
+        const [result] = await pool.query('DELETE FROM reports WHERE orderID = ?', [id]);
         return result.affectedRows > 0;
     } catch (error) {
         console.error('Error in deleteOrder:', error);
@@ -61,7 +61,7 @@ export const getOrderStats = async () => {
                 SUM(CASE WHEN status = 'in_progress' THEN 1 ELSE 0 END) as in_progress_orders,
                 SUM(CASE WHEN status = 'completed' THEN 1 ELSE 0 END) as completed_orders,
                 SUM(amount) as total_revenue
-            FROM operations
+            FROM reports
         `);
         return rows[0];
     } catch (error) {
